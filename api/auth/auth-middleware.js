@@ -2,11 +2,11 @@ const { JWT_SECRET } = require("../secrets"); // use this secret!
 const jwt = require('jsonwebtoken');
 const { findBy } = require("../users/users-model");
 
-const restricted = (req, res, next) => {
+const restricted = async (req, res, next) => {
   const token = req.headers.authorization
 
   if (token) {
-    jwt.verify( token, JWT_SECRET, (error, decoded) => {
+    await jwt.verify( token, JWT_SECRET, (error, decoded) => {
       if (error) {
         res.status(401).json({message: 'Token invalid'})
       }
@@ -76,14 +76,16 @@ const validateRoleName = (req, res, next) => {
 
   if (!role_name || !role_name.trim()) {
     req.role_name = 'student'
+    next()
   }
-  if (role_name.trim() === 'admin') {
+  else if (role_name.trim() === 'admin') {
     res.status(422).json({message: 'Role name can not be admin'})
   }
-  if (role_name.trim().length > 32) {
+  else if (role_name.trim().length > 32) {
     res.status(422).json({message: 'Role name can not be longer than 32 chars'})
   }
   else {
+    req.role_name = role_name
     next()
   }
 
