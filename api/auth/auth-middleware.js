@@ -37,7 +37,7 @@ const restricted = (req, res, next) => {
 }
 
 const only = role_name => (req, res, next) => {
-  if (req.decoded && req.decoded.role_name === role_name) {
+  if (req.decodedJwt && req.decodedJwt.role_name === role_name) {
     next()
   }
   else {
@@ -72,6 +72,22 @@ const checkUsernameExists = async (req, res, next) => {
 
 
 const validateRoleName = (req, res, next) => {
+  const {role_name} = req.body
+
+  if (!role_name || !role_name.trim()) {
+    req.role_name = 'student'
+  }
+  if (role_name.trim() === 'admin') {
+    res.status(422).json({message: 'Role name can not be admin'})
+  }
+  if (role_name.trim().length > 32) {
+    res.status(422).json({message: 'Role name can not be longer than 32 chars'})
+  }
+  else {
+    next()
+  }
+
+
   /*
     If the role_name in the body is valid, set req.role_name to be the trimmed string and proceed.
 
